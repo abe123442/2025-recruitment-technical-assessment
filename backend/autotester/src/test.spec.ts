@@ -22,6 +22,12 @@ describe("Task 1", () => {
       const response = await getTask1("");
       expect(response.status).toBe(400);
     });
+
+    it("more filtering and transforming", async () => {
+      const response = await getTask1("     mArgheriT4$4a Pi1ZZ4a_ -");
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({ msg: "Margherita Pizza"})
+    });
   });
 });
 
