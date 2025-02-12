@@ -126,6 +126,7 @@ def summary():
 	try:
 		return summary_handler(name), 200
 	except ValueError as e:
+		print(e, file=stderr)
 		return str(e), 400
 	
 def summary_handler(name: str | None):
