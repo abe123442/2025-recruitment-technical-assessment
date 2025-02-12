@@ -1,0 +1,68 @@
+[
+    {
+        "type": "recipe",
+        "name": "Skibidi Spaghetti",
+        "requiredItems": [
+            {
+                "name": "Meatball",
+                "quantity": 3
+            },
+            {
+                "name": "Pasta",
+                "quantity": 1
+            },
+            {
+                "name": "Tomato",
+                "quantity": 2
+            }
+        ]
+    },
+    {
+        "type": "recipe",
+        "name": "Meatball",
+        "requiredItems": [
+            {
+                "name": "Beef",
+                "quantity": 2
+            },
+            {
+                "name": "Egg",
+                "quantity": 1
+            }
+        ]
+    },
+    {
+        "type": "recipe",
+        "name": "Pasta",
+        "requiredItems": [
+            {
+                "name": "Flour",
+                "quantity": 3
+            },
+            {
+                "name": "Egg",
+                "quantity": 1
+            }
+        ]
+    },
+    {
+        "type": "ingredient",
+        "name": "Beef",
+        "cookTime": 5
+    },
+    {
+        "type": "ingredient",
+        "name": "Egg",
+        "cookTime": 3
+    },
+    {
+        "type": "ingredient",
+        "name": "Flour",
+        "cookTime": 0
+    },
+    {
+        "type": "ingredient",
+        "name": "Tomato",
+        "cookTime": 2
+    }
+]

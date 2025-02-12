@@ -26,16 +26,76 @@ describe("Task 1", () => {
     it("more filtering and transforming", async () => {
       const response = await getTask1("     mArgheriT4$4a Pi1ZZ4a_ -");
       expect(response.status).toBe(200);
-      expect(response.body).toStrictEqual({ msg: "Margherita Pizza"})
+      expect(response.body).toStrictEqual({ msg: "Margherita Pizza"});
     });
   });
 });
 
+const clearCookBook = async () => {
+  await request("http://localhost:8080").delete("/clear");
+};
+
 describe("Task 2", () => {
+  beforeEach(clearCookBook);
+
   describe("POST /entry", () => {
     const putTask2 = async (data) => {
       return await request("http://localhost:8080").post("/entry").send(data);
     };
+
+    
+    describe("custom tests", () => {
+      it("invalid type", async () => {
+        const entry = {
+          type: "fake-entry-type",
+          name: "BooHoo",
+          cookTime: 0
+        };
+
+        const resp = await putTask2(entry);
+        expect(resp.status).toBe(400);
+      });
+
+      it("invalid cookTime", async () => {
+        const entry = {
+          type: "ingredient",
+          name: "BooHoo",
+          cookTime: -1
+        };
+
+        const response = await putTask2(entry);
+        expect(response.status).toBe(400);
+      });
+
+      it("mfw requiredItem is the recipe itself", async () => {
+        const entry = { type: "recipe", name: "Meatball", requiredItems: [
+          { name: "Beef", quantity: 1 },
+          { name: "Meatball", quantity: 1 }
+        ]}
+        const response = await putTask2(entry);
+        expect(response.status).toBe(400);
+      });
+
+      it("mfw requiredItem occurs again", async () => {
+        const entry = { type: "recipe", name: "Meatball", requiredItems: [
+          { name: "Beef", quantity: 1 },
+          { name: "Beef", quantity: 1 }
+        ]}
+        const response = await putTask2(entry);
+        expect(response.status).toBe(400);
+      });
+
+      it("Add Recipe", async () => {
+        const meatball = {
+          type: "recipe",
+          name: "Meatball",
+          requiredItems: [{ name: "Beef", quantity: 1 }],
+        };
+        const resp1 = await putTask2(meatball);
+        expect(resp1.status).toBe(200);
+      });
+    });
+
 
     it("Add Ingredients", async () => {
       const entries = [
@@ -103,16 +163,24 @@ describe("Task 2", () => {
 });
 
 describe("Task 3", () => {
-  describe("GET /summary", () => {
-    const postEntry = async (data) => {
-      return await request("http://localhost:8080").post("/entry").send(data);
-    };
+  beforeEach(clearCookBook);
+  const postEntry = async (data) => {
+    return await request("http://localhost:8080").post("/entry").send(data);
+  };
 
-    const getTask3 = async (name) => {
-      return await request("http://localhost:8080").get(
-        `/summary?name=${name}`
-      );
-    };
+  const getTask3 = async (name) => {
+    return await request("http://localhost:8080").get(
+      `/summary?name=${name}`
+    );
+  };
+
+  describe("GET /summary", () => {
+    describe("custom", () => {
+      it("What is bro doing - Get empty cookbook", async () => {
+        const resp = await getTask3("nothing");
+        expect(resp.status).toBe(400);
+      });
+    });
 
     it("What is bro doing - Get empty cookbook", async () => {
       const resp = await getTask3("nothing");
@@ -164,4 +232,37 @@ describe("Task 3", () => {
       expect(resp3.status).toBe(200);
     });
   });
+
+  describe("custom tests", () => {
+    const entries = require('./data/task3_recursion_cookbook.json');
+
+    it("demo recursion", async () => {
+      for (const entry of entries) {
+        const response = await postEntry(entry);
+        expect(response.status).toBe(200);
+      }
+
+      const response = await getTask3("Skibidi Spaghetti");
+      expect(response.status).toBe(200);
+      expect(response.body.cookTime).toBe(46)
+      expect(response.body.name).toStrictEqual("Skibidi Spaghetti")
+
+      const ingredients = response.body.ingredients;
+      expect(ingredients.length).toBe(4);
+
+
+      const expected = [
+        { "name": "Beef", "quantity": 6 },
+        { "name": "Flour", "quantity": 3 },
+        { "name": "Egg", "quantity": 4 },
+        { "name": "Tomato", "quantity": 2 },
+      ];
+
+      const sortFunc = (a, b) => b.name.localeCompare(a.name);
+      ingredients.sort(sortFunc);
+      expected.sort(sortFunc);
+      expect(ingredients).toEqual(expected);
+    });
+  });
+
 });
