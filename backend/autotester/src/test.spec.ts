@@ -175,13 +175,6 @@ describe("Task 3", () => {
   };
 
   describe("GET /summary", () => {
-    describe("custom", () => {
-      it("What is bro doing - Get empty cookbook", async () => {
-        const resp = await getTask3("nothing");
-        expect(resp.status).toBe(400);
-      });
-    });
-
     it("What is bro doing - Get empty cookbook", async () => {
       const resp = await getTask3("nothing");
       expect(resp.status).toBe(400);

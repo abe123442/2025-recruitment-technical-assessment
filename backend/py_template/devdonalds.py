@@ -123,13 +123,19 @@ def create_entry():
 def summary():
 	name = request.args.get('name')
 
+	try:
+		return summary_handler(name), 200
+	except ValueError as e:
+		return str(e), 400
+	
+def summary_handler(name: str | None):
 	if name not in cookbook:
-		return f'recipe of {name} not found in cookbook', 400
+		raise ValueError(f'recipe of {name} not found in cookbook')
 	
 	
 	entry = cookbook[name].root
 	if entry.type == "ingredient":
-		return f'{name} is an ingredient and not a recipe', 400
+		raise ValueError(f'{name} is an ingredient and not a recipe')
 	
 	summary: Dict[str, Any] = {
 		"name": name,
@@ -141,30 +147,27 @@ def summary():
 	ingredients: Counter[str] = Counter()
 
 	# assuming that an eventual requiredItem of a recipe is not the recipe itself
-	def dfs(entry: Recipe, multiplier: int):
-		for req_item in entry.required_items:
-			if (req_name := req_item.name) not in cookbook:
-				raise ValueError(f'required item {req_name} not found in cookbook')
+	def dfs(recipe: Recipe, multiplier: int):
+		for it in recipe.required_items:
+
+			# invalid requiredItem - doesn't exist in the cookbook
+			if it.name not in cookbook:
+				raise ValueError(f'requiredItem "{it.name}" not found in cookbook')
 			
-			req_entry = cookbook[req_name].root
-			if (req_entry.type) == "ingredient":
-				ingredients[req_name] += multiplier * req_item.quantity
-				summary["cookTime"] += multiplier * req_item.quantity * req_entry.cook_time
+			entry = cookbook[it.name].root
+			if (entry.type) == "ingredient":
+				# update ingredients counter, and total cook time of `recipe`
+				ingredients[it.name] += multiplier * it.quantity
+				summary["cookTime"] += multiplier * it.quantity * entry.cook_time
 
 			else:
-				dfs(req_entry, multiplier * req_item.quantity)
+				dfs(entry, multiplier * it.quantity)
 
-	try:
-		dfs(entry, 1)
-		for ingredient, count in ingredients.items():
-			summary['ingredients'].append({
-				"name": ingredient,
-				"quantity": count
-			})
+	dfs(recipe=entry, multiplier=1)
+	for ingredient, count in ingredients.items():
+		summary['ingredients'].append({ "name": ingredient, "quantity": count })
 
-		return summary, 200
-	except ValueError as e:
-		return str(e), 400
+	return summary
 
 
 # =============================================================================
